@@ -383,8 +383,7 @@ If you use SEMANTIX in your research, please cite:
 @inproceedings{semantix2026,
   title={Learned Semantic Cost Models for Adaptive Token-Efficient 
          Query Optimization in LLM-Native Relational Engines},
-  author={Anonymous},
-  booktitle={Proceedings of the 2nd NOVAS Workshop at VLDB},
+  author={Prakul Sunil Hiremath},
   year={2026}
 }
 ```
