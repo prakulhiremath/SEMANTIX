@@ -397,4 +397,3 @@ Apache License 2.0 - See LICENSE file for details.
 
 **Last Updated**: June 2026  
 **Status**: Production-Ready v0.1.0  
-**Maintainer**: VLDB 2026 NOVAS Workshop Contributors
