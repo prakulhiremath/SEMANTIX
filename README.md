@@ -1,6 +1,6 @@
 # SEMANTIX: Learned Semantic Cost Models for LLM-Native Relational Engines
 
-**A production-ready implementation of the VLDB 2026 NOVAS Workshop paper.**
+[![DOI](https://zenodo.org/badge/1262123307.svg)](https://doi.org/10.5281/zenodo.20582657)
 
 > Treating AI/LLM inference as a core database engine primitive with information-theoretic cost modeling.
 
