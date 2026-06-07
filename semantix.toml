@@ -1,0 +1,69 @@
+# SEMANTIX Configuration
+# Production-ready defaults for VLDB 2026 NOVAS Workshop
+
+[anchor_config]
+# Semantic anchor model paths
+encoder_model_path = "models/bert-encoder-semantic.bin"
+decoder_model_path = "models/bert-decoder-semantic.bin"
+
+# BERT configuration
+max_sequence_length = 512
+embedding_dim = 768
+
+# Semantic verification
+semantic_drift_threshold = 0.15  # δ_drift parameter from paper
+
+[cost_model_config]
+# Cost model type: "gbdt", "neural", or "parametric"
+model_type = "gbdt"
+model_path = "models/cost_model.xgb"
+
+# Cost model weights (from Equation 1)
+entropy_weight = 1.0          # Weight for H(i | Σ^ctx(i))
+delay_weight = 0.3            # γ parameter
+staleness_weight = 0.5        # β parameter
+context_decay_rate = 0.95
+
+# Token budget constraints
+min_token_budget = 100
+max_token_budget = 10000
+
+[scheduler_config]
+# Latency constraints
+max_latency_ms = 50           # L_max from Algorithm 1
+latency_sigma = 0.1           # Latency sensitivity
+
+# Optimization parameters
+alpha = 0.01                  # Gradient step size
+convergence_threshold = 0.001 # ε for Algorithm 1
+max_iterations = 1000
+enable_profiling = true
+
+[database]
+# PostgreSQL connection
+url = "postgresql://localhost/semantix"
+
+# Query configuration
+statement_timeout_ms = 30000
+max_connections = 100
+
+[performance]
+# Logging and metrics
+log_level = "info"
+enable_metrics = true
+metrics_export_interval_seconds = 60
+
+# Caching
+enable_semantic_cache = true
+cache_max_size = 10000
+cache_ttl_seconds = 3600
+
+[execution]
+# Execution parameters
+batch_size = 1000
+parallel_workers = 4
+enable_adaptive_batching = true
+
+# Feedback learning
+feedback_buffer_threshold = 100
+model_retraining_interval_hours = 24
