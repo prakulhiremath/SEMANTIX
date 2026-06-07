@@ -1,7 +1,7 @@
 # SEMANTIX: Learned Semantic Cost Models for LLM-Native Relational Engines
 
 [![DOI](https://zenodo.org/badge/1262123307.svg)](https://doi.org/10.5281/zenodo.20582657)
-[![Medium](https://img.shields.io/badge/Medium-Read_The_Article-black?style=for-the-badge&logo=medium)](https://medium.com/@prakulhiremath/the-database-finally-learned-to-talk-to-ai-7413f3f617d6)
+[![Read on Medium](https://img.shields.io/badge/Read_on-Medium-000000?style=flat-square&logo=medium&logoColor=white)](https://medium.com/@prakulhiremath/the-database-finally-learned-to-talk-to-ai-7413f3f617d6)
 
 > Treating AI/LLM inference as a core database engine primitive with information-theoretic cost modeling.
 
