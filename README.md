@@ -28,21 +28,21 @@ SEMANTIX implements a paradigm shift in relational query optimization by treatin
 │                  SEMANTIX Query Optimizer                   │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
-│  Phase 1: Semantic Parsing                                 │
-│  ├─ NL Query → Bidirectional Semantic Anchor              │
-│  └─ Output: LogicalPlan + Initial Cost Estimates          │
+│  Phase 1: Semantic Parsing                                  │
+│  ├─ NL Query → Bidirectional Semantic Anchor                │
+│  └─ Output: LogicalPlan + Initial Cost Estimates            │
 │                                                             │
-│  Phase 2: Cost Refinement                                  │
-│  ├─ Learned Cost Model (GBDT)                             │
-│  └─ Output: Refined token cost estimates                   │
+│  Phase 2: Cost Refinement                                   │
+│  ├─ Learned Cost Model (GBDT)                               │
+│  └─ Output: Refined token cost estimates                    │
 │                                                             │
-│  Phase 3: Adaptive Token Scheduling                        │
-│  ├─ Constrained Optimization (Lagrangian)                 │
-│  └─ Output: Token allocation schedule                      │
+│  Phase 3: Adaptive Token Scheduling                         │
+│  ├─ Constrained Optimization (Lagrangian)                   │
+│  └─ Output: Token allocation schedule                       │
 │                                                             │
-│  Phase 4: Execution + Feedback Loop                        │
-│  ├─ Execute with schedule                                 │
-│  └─ Update cost model with actual execution data          │
+│  Phase 4: Execution + Feedback Loop                         │
+│  ├─ Execute with schedule                                   │
+│  └─ Update cost model with actual execution data            │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
