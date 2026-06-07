@@ -2,12 +2,12 @@
 name = "semantix"
 version = "0.1.0"
 edition = "2026"
+authors = ["Prakul Sunil Hiremath, 2026"]
+license = "Apache-2.0"
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
 anyhow = "1.0"
-tokio = { version = "1", features = ["full"] }
 
 [[bin]]
 name = "semantix"
