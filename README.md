@@ -393,17 +393,6 @@ If you use SEMANTIX in your research, please cite:
 
 Apache License 2.0 - See LICENSE file for details.
 
-## Support
-
-- **Documentation**: See `/docs` directory
-- **Issues**: GitHub Issues (github.com/novas-workshop-2026/learned-semantic-costs/issues)
-- **Email**: novas-workshop-2026@vldb.org
-- **Paper**: [VLDB 2026 NOVAS Workshop](https://vldb.org/2026/)
-
-## Acknowledgments
-
-This work was presented at the 2nd NOVAS Workshop (Next-Generation Optimization for Vector-Augmented Systems) at VLDB 2026. We thank the workshop organizers and reviewers for valuable feedback.
-
 ---
 
 **Last Updated**: June 2026  
