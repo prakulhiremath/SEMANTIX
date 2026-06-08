@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEMANTIX — Learned Semantic Cost Models for LLM-Native Relational Engines</title>
+    <meta name="description" content="Treating AI/LLM inference as a core database engine primitive with information-theoretic cost modeling. 3.2× token reduction, 1.8× speedup.">
+    
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- MathJax for LaTeX rendering -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <!-- Syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <style>
+        :root {
+            --accent: #0284c7;
+            --accent-light: #38bdf8;
+            --accent-dark: #0369a1;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+
+        html { scroll-behavior: smooth; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif; }
+        .font-display { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; letter-spacing: -0.02em; }
+
+        .math-block {
+            background: #f8fafc;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            border-left: 3px solid var(--accent);
+        }
+
+        .code-block {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        .code-block code { color: #e2e8f0; }
+        .hljs-string { color: #86efac !important; }
+        .hljs-number { color: #fbbf24 !important; }
+        .hljs-literal { color: #818cf8 !important; }
+        .hljs-attr { color: #60a5fa !important; }
+        .hljs-title { color: #38bdf8 !important; }
+        .hljs-comment { color: #64748b !important; }
+
+        .architecture-diagram {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            line-height: 1.6;
+            overflow-x: auto;
+            color: #475569;
+            margin: 2rem 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+        }
+
+        thead { background: #f8fafc; }
+        th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #1e293b;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+            color: #475569;
+        }
+        tr:hover { background: #f8fafc; }
+
+        .badge {
+            display: inline-block;
+            padding: 0.375rem 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-decoration: none;
+            color: #475569;
+            transition: all 0.2s ease;
+        }
+
+        .badge:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(2, 132, 199, 0.05);
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, rgba(2, 132, 199, 0.05) 0%, rgba(56, 189, 248, 0.05) 100%);
+            border: 1px solid #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border-left: 3px solid var(--accent);
+        }
+
+        .metric-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 0.375rem;
+            text-align: center;
+            border-top: 3px solid var(--accent);
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            font-family: 'Courier New', monospace;
+        }
+
+        .metric-label {
+            font-size: 0.75rem;
+            color: #475569;
+            margin-top: 0.5rem;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            padding: 6rem 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .hero-accent { color: var(--accent); }
+        .section { padding: 4rem 0; }
+        .section h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.01em;
+        }
+
+        .section h3 {
+            font-size: 1.375rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .section p {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: #475569;
+            margin-bottom: 1rem;
+        }
+
+        .section ul {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .section li {
+            color: #475569;
+            margin-bottom: 0.5rem;
+            line-height: 1.7;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: var(--accent);
+            color: white;
+            text-decoration: none;
+            border-radius: 0.375rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            border: 1px solid var(--accent);
+        }
+
+        .btn:hover {
+            background: var(--accent-dark);
+            border-color: var(--accent-dark);
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--accent);
+        }
+
+        .btn-outline:hover {
+            background: rgba(2, 132, 199, 0.1);
+        }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
+            margin: 4rem 0;
+        }
+
+        .info-box {
+            background: #f0f9ff;
+            border-left: 3px solid var(--accent);
+            padding: 1.5rem;
+            border-radius: 0.375rem;
+            margin: 2rem 0;
+        }
+
+        .info-box strong { color: var(--accent); }
+        .gradient-text {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
+</head>
+<body class="bg-white text-gray-900">
+    <!-- Hero Section -->
+    <div class="hero">
+        <div class="max-w-6xl mx-auto px-6 sm:px-8">
+            <!-- Badges -->
+            <div class="flex flex-wrap gap-2 mb-8">
+                <span class="badge">🗄️ Database Systems</span>
+                <a href="https://doi.org/10.5281/zenodo.20582657" class="badge" target="_blank" rel="noopener">
+                    🔬 Zenodo
+                </a>
+                <a href="https://medium.com/@prakulhiremath/the-database-finally-learned-to-talk-to-ai-7413f3f617d6" class="badge" target="_blank" rel="noopener">
+                    ✍️ Medium Article
+                </a>
+                <span class="badge">🦀 Rust</span>
+                <span class="badge">🤖 LLM-Native</span>
+                <span class="badge">⚡ Information-Theoretic</span>
+            </div>
+
+            <!-- Hero Content -->
+            <div class="max-w-3xl">
+                <h1 class="text-5xl sm:text-6xl font-display font-bold mb-4 text-slate-900">
+                    SEMANTIX
+                </h1>
+                <p class="text-xl text-slate-600 mb-2 font-display font-semibold">
+                    Learned Semantic Cost Models for LLM-Native Relational Engines
+                </p>
+                <p class="text-2xl font-display font-semibold mb-8">
+                    <span class="text-slate-700">Treating AI/LLM inference as</span>
+                    <span class="hero-accent"> a core database primitive</span>
+                </p>
+                <p class="text-lg text-slate-600 mb-8 max-w-2xl leading-relaxed">
+                    A paradigm shift in relational query optimization. SEMANTIX couples LLM inference with learned semantic cost estimation, eliminating token waste and semantic misalignment. 3.2× token reduction, 1.8× speedup, 97.1% accuracy.
+                </p>
+
+                <div class="flex flex-wrap gap-4">
+                    <a href="#architecture" class="btn">Learn More</a>
+                    <a href="#installation" class="btn btn-outline">
+                        Install →
+                    </a>
+                </div>
+
+                <p class="text-sm text-slate-500 mt-6 italic">
+                    ⚡ Rust implementation • PostgreSQL 14+ • Production-ready v0.1.0
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core Problem -->
+    <div class="max-w-6xl mx-auto px-6 sm:px-8 section">
+        <div class="bg-slate-50 border-l-4 border-blue-600 p-8 rounded-sm">
+            <p class="text-lg text-slate-800 font-semibold mb-4">
+                "Current systems decouple LLM retrieval from cost-aware query planning."
+            </p>
+            <p class="text-slate-700 leading-relaxed">
+                This architectural choice results in token waste, semantic misalignment, and unbounded latency. The database doesn't know how to optimize for AI. The AI doesn't know its cost. They operate in isolation. SEMANTIX unifies them.
+            </p>
+        </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- The Solution -->
+    <div class="max-w-6xl mx-auto px-6 sm:px-8 section" id="architecture">
+        <h2>The Solution: Semantic Cost Modeling</h2>
+
+        <p>
+            SEMANTIX treats LLM inference as a first-class database primitive, coupled with learned semantic cost estimation through information-theoretic foundations.
+        </p>
+
+        <h3>Four-Phase Architecture</h3>
+
+        <div class="architecture-diagram">
+<pre>┌─────────────────────────────────────────────────────────────┐
+│                  SEMANTIX Query Optimizer                   │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  Phase 1: Semantic Parsing                                  │
+│  ├─ NL Query → Bidirectional Semantic Anchor                │
+│  └─ Output: LogicalPlan + Initial Cost Estimates            │
+│                                                             │
+│  Phase 2: Cost Refinement                                   │
+│  ├─ Learned Cost Model (GBDT)                               │
+│  └─ Output: Refined token cost estimates                    │
+│                                                             │
+│  Phase 3: Adaptive Token Scheduling                         │
+│  ├─ Constrained Optimization (Lagrangian)                   │
+│  └─ Output: Token allocation schedule                       │
+│                                                             │
+│  Phase 4: Execution + Feedback Loop                         │
+│  ├─ Execute with schedule                                   │
+│  └─ Update cost model with actual execution data            │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘</pre>
+        </div>
+
+        <h3>Key Innovations</h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-8">
+            <div class="feature-card">
+                <h4 class="font-bold text-slate-900 mb-2">📊 Formal Cost Architecture</h4>
+                <p class="text-sm text-slate-700">
+                    Unified cost model embedding semantic entropy, relational context preservation, and execution schedule conditioning.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <h4 class="font-bold text-slate-900 mb-2">🔗 Bidirectional Semantic Anchors</h4>
+                <p class="text-sm text-slate-700">
+                    Learned projections mapping NL intent to cost-parametric logical plans with full provenance.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <h4 class="font-bold text-slate-900 mb-2">⏱️ Adaptive Token Scheduling</h4>
+                <p class="text-sm text-slate-700">
+                    Dynamic token allocation under latency constraints using Lagrangian relaxation and iterative refinement.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <h4 class="font-bold text-slate-900 mb-2">🔄 Continuous Learning</h4>
+                <p class="text-sm text-slate-700">
+                    Feedback loop integrating actual execution metrics to refine cost models in real-time.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Results -->
+    <div class="max-w-6xl mx-auto px-6 sm:px-8 section">
+        <h2>Performance Results</h2>
+
+        <p>
+            Evaluated on extended TPC-H with semantic annotations. SEMANTIX demonstrates:
+        </p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 my-8">
+            <div class="metric-card">
+                <p class="metric-label">Inference Token Cost</p>
+                <p class="metric-value">3.2×</p>
+                <p class="metric-label" style="color: var(--success);">Reduction vs PostgreSQL</p>
+            </div>
+
+            <div class="metric-card">
+                <p class="metric-label">End-to-End Latency</p>
+                <p class="metric-value">1.8×</p>
+                <p class="metric-label" style="color: var(--success);">Speedup (25.3ms vs 45.3ms)</p>
+            </div>
+
+            <div class="metric-card">
+                <p class="metric-label">Semantic Accuracy</p>
+                <p class="metric-value">97.1%</p>
+                <p class="metric-label" style="color: var(--success);">Maintained</p>
+            </div>
+
+            <div class="metric-card">
+                <p class="metric-label">Energy Reduction</p>
+                <p class="metric-value">65.6%</p>
+                <p class="metric-label" style="color: var(--success);">vs Classical Systems</p>
+            </div>
+        </div>
+
+        <h3>Comparison Against Baselines</h3>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>System</th>
+                    <th>Tokens (K)</th>
+                    <th>Latency (ms)</th>
+                    <th>Accuracy (%)</th>
+                    <th>Energy (Wh)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="background: rgba(16, 185, 129, 0.05);">
+                    <td><strong>SEMANTIX</strong></td>
+                    <td><strong>3.1</strong></td>
+                    <td><strong>25.3</strong></td>
+                    <td><strong>97.1</strong></td>
+                    <td><strong>1.24</strong></td>
+                </tr>
+                <tr>
+                    <td>Classical PostgreSQL</td>
+                    <td>9.9</td>
+                    <td>45.3</td>
+                    <td>89.4</td>
+                    <td>3.61</td>
+                </tr>
+                <tr>
+                    <td>RAG-Optimized</td>
+                    <td>8.2</td>
+                    <td>42.1</td>
+                    <td>91.3</td>
+                    <td>3.04</td>
+                </tr>
+                <tr>
+                    <td>Semantic Entropy</td>
+                    <td>5.4</td>
+                    <td>33.7</td>
+                    <td>94.8</td>
+                    <td>1.89</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Mathematics -->
+    <div class="max-w-6xl mx-auto px-6 sm:px-8 section">
+        <h2>Mathematical Foundations</h2>
+
+        <h3>Equation 1: Semantic Token Cost</h3>
+
+        <p>
+            The core cost model combines information-theoretic entropy with execution schedule conditioning:
+        </p>
+
+        <div class="math-block">
+            $$C_{\text{sem}}(\pi, \sigma) = \sum_{i=1}^{n} \left[ H(i \mid \Sigma^{\text{ctx}}(i)) + \gamma \cdot \text{delay}(o_j, \sigma) + \beta \cdot \text{staleness}(o_j, \sigma) \right]$$
+        </div>
+
+        <p>where:</p>
+        <ul class="space-y-2 text-slate-700">
+            <li><code>H(i | Σ^ctx(i))</code> = Conditional semantic entropy of token i given context</li>
+            <li><code>γ</code> = Delay weight parameter (controls latency penalty)</li>
+            <li><code>β</code> = Staleness weight parameter (controls stale context penalty)</li>
+            <li><code>σ</code> = Execution schedule (allocation of computational resources)</li>
+        </ul>
+
+        <h3>Equation 4: Bidirectional Semantic Anchor</h3>
+
+        <p>
+            Maps natural language queries to cost-parametric logical plans:
+        </p>
+
+        <div class="math-block">
+            $$\varphi(\text{NL query}) = (\text{LogicalPlan}, \{c_1, \ldots, c_k\})$$
+        </div>
+
+        <h3>Algorithm 1: Adaptive Token Scheduling</h3>
+
+        <p>
+            Solves the constrained optimization problem using Lagrangian relaxation:
+        </p>
+
+        <div class="math-block">
+            $$\begin{aligned}
+            \text{minimize} & \quad \sum_{j=1}^{m} c_j^{\text{allocated}} \\
+            \text{subject to} & \quad \sum_{j=1}^{m} \text{latency}(o_j, c_j^{\text{allocated}}) \leq L_{\max} \\
+            & \quad c_j^{\min} \leq c_j^{\text{allocated}} \leq c_j^{\max}
+            \end{aligned}$$
+        </div>
+
+        <div class="info-box">
+            <p>
+                <strong>Convergence:</strong> The iterative algorithm converges to an ε-optimal solution in <code>O(log(1/ε))</code> iterations, bounded by a configurable threshold (default 0.001).
+            </p>
+        </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Installation -->
+    <div class="max-w-6xl mx-auto px-6 sm:px-8 section" id="installation">
+        <h2>Installation & Setup</h2>
+
+        <h3>Prerequisites</h3>
+
+        <ul class="space-y-2 text-slate-700">
+            <li><strong>Rust 1.70+</strong> — <a href="https://rustup.rs/" class="text-blue-600 hover:underline" target="_blank" rel="noopener">Install</a></li>
+            <li><strong>PostgreSQL 14+</strong> — <a href="https://www.postgresql.org/download/" class="text-blue-600 hover:underline" target="_blank" rel="noopener">Install</a></li>
+            <li><strong>Python 3.10+</strong> — for data generation scripts</li>
+            <li><strong>8GB RAM, 4-core CPU minimum</strong> — NVIDIA GPU optional</li>
+        </ul>
+
+        <h3>Quick Start</h3>
+
+        <div class="code-block mb-8"><pre><code class="language-bash"># Clone repository
+git clone https://github.com/novas-workshop-2026/learned-semantic-costs.git
+cd semantix
+
+# Build project (release optimized)
+cargo build --release
+
+# Create PostgreSQL database
+createdb semantix
+
+# Initialize schema
+psql -d semantix -f schema/tpch_schema.sql
+
+# Generate TPC-H with semantic annotations
+cargo run --release --bin data-generator
+
+# Load data
+psql -d semantix -c "COPY orders FROM 'tpch_orders_semantic.csv' CSV HEADER;"
+
+# Profile operator latencies
+cargo run --release --bin cost-profiler
+
+# Run benchmark
+cargo run --release --bin benchmark</code></pre></div>
+
+        <h3>Start the SEMANTIX Daemon</h3>
+
+        <div class="code-block"><pre><code class="language-bash">cargo run --release --bin semantix-daemon</code></pre></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Usage -->
+    <div class="max-w-6xl mx-auto px-6 sm:px-8 section">
+        <h2>Usage</h2>
+
+        <h3>Programmatic API (Rust)</h3>
+
+        <div class="code-block mb-8"><pre><code class="language-rust">use semantix::SemanticQueryOptimizer;
+
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
+    // Initialize optimizer
+    let mut optimizer = SemanticQueryOptimizer::new(
+        "postgresql://localhost/semantix"
+    ).await?;
+
+    // Execute query with full semantic optimization
+    let result = optimizer.optimize_and_execute(
+        "SELECT * FROM orders WHERE custkey = 1"
+    ).await?;
+
+    // Check metrics
+    let metrics = optimizer.get_metrics();
+    println!("Tokens: {}, Latency: {}ms, Accuracy: {:.2}%",
+        metrics.avg_token_cost,
+        metrics.avg_latency_ms,
+        metrics.avg_semantic_accuracy * 100.0
+    );
+
+    // Provide feedback for continuous learning
+    optimizer.feedback(&result.context);
+
+    Ok(())
+}
+</code></pre></div>
+
+        <h3>Command-Line Interface</h3>
+
+        <div class="code-block"><pre><code class="language-bash"># Profile specific query
+cargo run --release --bin benchmark -- --query "SELECT * FROM orders LIMIT 100"
+
+# Generate data with custom scale
+cargo run --release --bin data-generator -- --scale-factor 10
+
+# Profile specific operators
+cargo run --release --bin cost-profiler -- --operators "Scan,Filter,Join"</code></pre></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Configuration -->
+    <div class="max-w-6xl mx-auto px-6 sm:px-8 section">
+        <h2>Configuration</h2>
+
+        <h3>Configuration File (semantix.toml)</h3>
+
+        <div class="code-block mb-8"><pre><code class="language-toml">[anchor_config]
+encoder_model_path = "models/bert-encoder-semantic.bin"
+decoder_model_path = "models/bert-decoder-semantic.bin"
+max_sequence_length = 512
+embedding_dim = 768
+semantic_drift_threshold = 0.15
+
+[cost_model_config]
+model_type = "gbdt"
+model_path = "models/cost_model.xgb"
+entropy_weight = 1.0
+delay_weight = 0.3
+staleness_weight = 0.5
+min_token_budget = 100
+max_token_budget = 10000
+
+[scheduler_config]
+max_latency_ms = 50
+latency_sigma = 0.1
+alpha = 0.01
+convergence_threshold = 0.001
+max_iterations = 1000
+
+[database]
+url = "postgresql://localhost/semantix"
+log_level = "info"</code></pre></div>
+
+        <h3>Environment Variables</h3>
+
+        <div class="code-block"><pre><code class="language-bash">export DATABASE_URL="postgresql://user:password@localhost/semantix"
+export LOG_LEVEL="debug"
+export SEMANTIX_CONFIG="path/to/semantix.toml"</code></pre></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Testing -->
+    <div class="max-w-6xl mx-auto px-6 sm:px-8 section">
+        <h2>Testing & Profiling</h2>
+
+        <h3>Test Suite</h3>
+
+        <div class="code-block mb-8"><pre><code class="language-bash"># Run all tests
+cargo test
+cargo test --doc
+cargo test --all-features
+
+# Integration tests (requires PostgreSQL)
+cargo test --test integration_tests -- --test-threads=1
+
+# Benchmark tests
+cargo bench</code></pre></div>
+
+        <h3>Performance Profiling</h3>
+
+        <div class="code-block"><pre><code class="language-bash"># CPU profiling with flamegraph
+cargo install flamegraph
+cargo flamegraph --bin benchmark
+# Open flamegraph.svg in browser
+
+# Memory profiling
+valgrind --tool=massif ./target/release/benchmark
+ms_print massif.out.<pid>
+
+# Latency profiling
+cargo run --release --bin cost-profiler -- --detailed-report</code></pre></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Project Structure -->
+    <div class="max-w-6xl mx-auto px-6 sm:px-8 section">
+        <h2>Project Structure</h2>
+
+        <div class="architecture-diagram">
+<pre>semantix/
+├── Cargo.toml                 # Rust dependencies
+├── src/
+│   ├── lib.rs               # Main library exports
+│   ├── semantic_anchors.rs  # NL → LogicalPlan translation
+│   ├── cost_model.rs        # Learned cost estimation
+│   ├── scheduler.rs         # Adaptive token scheduling (Alg 1)
+│   ├── database.rs          # PostgreSQL integration
+│   ├── executor.rs          # Query execution engine
+│   ├── metrics.rs           # Performance tracking
+│   ├── config.rs            # Configuration management
+│   ├── errors.rs            # Error types
+│   └── bin/
+│       ├── daemon.rs        # Main optimizer service
+│       ├── profiler.rs      # Latency profiler
+│       ├── data_gen.rs      # TPC-H data generation
+│       └── benchmark.rs     # Performance evaluation
+├── schema/
+│   └── tpch_schema.sql      # PostgreSQL schema
+├── tests/
+│   ├── integration_tests.rs # End-to-end tests
+│   └── unit_tests.rs        # Component tests
+├── docker/
+│   ├── Dockerfile           # Container image
+│   └── docker-compose.yml   # Multi-container setup
+└── README.md</pre>
+        </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Contributing -->
+    <div class="max-w-6xl mx-auto px-6 sm:px-8 section">
+        <h2>Contributing</h2>
+
+        <p>We welcome contributions! The project uses:</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 my-8">
+            <div class="feature-card">
+                <h4 class="font-bold text-slate-900 mb-2">🦀 Rust 1.70+</h4>
+                <p class="text-sm text-slate-700">Full type safety and memory safety guarantees.</p>
+            </div>
+
+            <div class="feature-card">
+                <h4 class="font-bold text-slate-900 mb-2">✓ Tests</h4>
+                <p class="text-sm text-slate-700">Unit and integration tests for all components.</p>
+            </div>
+
+            <div class="feature-card">
+                <h4 class="font-bold text-slate-900 mb-2">📝 Documentation</h4>
+                <p class="text-sm text-slate-700">Inline docs, rustdoc, and comprehensive guides.</p>
+            </div>
+        </div>
+
+        <div class="code-block"><pre><code class="language-bash"># Fork, create branch, and submit PR
+git checkout -b feature/amazing-feature
+git commit -m 'Add amazing feature'
+git push origin feature/amazing-feature
+
+# Ensure code quality
+cargo test
+cargo fmt
+cargo clippy -- -D warnings</code></pre></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Citation -->
+    <div class="max-w-6xl mx-auto px-6 sm:px-8 section">
+        <h2>Citation</h2>
+
+        <div class="code-block">
+<pre><code>@inproceedings{semantix2026,
+  title={Learned Semantic Cost Models for Adaptive Token-Efficient 
+         Query Optimization in LLM-Native Relational Engines},
+  author={Prakul Sunil Hiremath},
+  year={2026}
+}</code></pre>
+        </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Footer -->
+    <div class="bg-slate-50 border-t border-slate-200 py-12">
+        <div class="max-w-6xl mx-auto px-6 sm:px-8">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 mb-12">
+                <div>
+                    <h4 class="font-semibold text-slate-900 mb-4">Resources</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="https://doi.org/10.5281/zenodo.20582657" class="text-blue-600 hover:underline" target="_blank" rel="noopener">Zenodo DOI</a></li>
+                        <li><a href="https://github.com/novas-workshop-2026/learned-semantic-costs" class="text-blue-600 hover:underline" target="_blank" rel="noopener">GitHub Repository</a></li>
+                        <li><a href="https://medium.com/@prakulhiremath/the-database-finally-learned-to-talk-to-ai-7413f3f617d6" class="text-blue-600 hover:underline" target="_blank" rel="noopener">Medium Explainer</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-slate-900 mb-4">Develop</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#installation" class="text-blue-600 hover:underline">Installation Guide</a></li>
+                        <li><a href="#architecture" class="text-blue-600 hover:underline">Architecture</a></li>
+                        <li><a href="https://github.com/novas-workshop-2026/learned-semantic-costs/issues" class="text-blue-600 hover:underline" target="_blank" rel="noopener">Report Issues</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-slate-900 mb-4">Connect</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="mailto:prakulhiremath03@gmail.com" class="text-blue-600 hover:underline">Email</a></li>
+                        <li><a href="https://github.com/prakulhiremath" class="text-blue-600 hover:underline" target="_blank" rel="noopener">GitHub</a></li>
+                        <li>Status: <strong>v0.1.0</strong></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-slate-200 pt-8">
+                <p class="text-sm text-slate-600 text-center mb-4">
+                    <strong>SEMANTIX</strong> — LLM-Native Relational Engines with Learned Semantic Costs
+                </p>
+                <p class="text-xs text-slate-500 text-center">
+                    Apache License 2.0 · Rust 1.70+ · PostgreSQL 14+ · <a href="https://github.com/novas-workshop-2026/learned-semantic-costs" class="text-blue-600 hover:underline" target="_blank" rel="noopener">Open Source</a>
+                </p>
+                <p class="text-xs text-slate-500 text-center mt-4">
+                    <em>"The database finally learned to talk to AI."</em>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        document.querySelectorAll('.code-block pre code').forEach((block) => {
+            hljs.highlightElement(block);
+        });
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
