@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use SEMANTIX in your research, please cite it as below."
+authors:
+  - family-names: "Hiremath"
+    given-names: "Prakul Sunil"
+title: "SEMANTIX: Learned Semantic Cost Models for LLM-Native Relational Engines"
+version: "0.1.0"
+doi: "10.5281/zenodo.20582657"
+date-released: "2026-06-08"
+url: "https://github.com/novas-workshop-2026/learned-semantic-costs"
+keywords:
+  - "query optimization"
+  - "learned cost models"
+  - "large language models"
+  - "relational databases"
+  - "token efficiency"
+license: "Apache-2.0"
+preferred-citation:
+  type: conference-paper
+  authors:
+    - family-names: "Hiremath"
+      given-names: "Prakul Sunil"
+  title: "Learned Semantic Cost Models for Adaptive Token-Efficient Query Optimization in LLM-Native Relational Engines"
+  year: 2026
